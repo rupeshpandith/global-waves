@@ -8,9 +8,10 @@ interface AudioPlayerProps {
   onTogglePlay: () => void;
   onNext: () => void;
   onPrev: () => void;
+  showOnMobile: boolean;
 }
 
-const AudioPlayer: React.FC<AudioPlayerProps> = ({ currentStation, isPlaying, onTogglePlay, onNext, onPrev }) => {
+const AudioPlayer: React.FC<AudioPlayerProps> = ({ currentStation, isPlaying, onTogglePlay, onNext, onPrev, showOnMobile }) => {
   const [volume, setVolume] = useState(70);
   const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -98,10 +99,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ currentStation, isPlaying, on
   if (!currentStation) return null;
 
   return (
-    <div className="fixed z-50 transition-all duration-300
-                    md:left-0 md:top-0 md:h-screen md:w-80 md:border-r 
-                    bottom-0 left-0 w-full h-auto border-t md:border-t-0
-                    border-neon-dim bg-dark-bg/80 backdrop-blur-xl flex flex-col justify-between p-6">
+    <div className={`fixed z-50 transition-all duration-500 ease-out
+                    md:left-0 md:top-0 md:h-screen md:w-80 md:border-r md:rounded-none md:border-t-0
+                    md:translate-y-0 md:opacity-100 md:pointer-events-auto md:bottom-auto
+                    ${showOnMobile ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-[150%] opacity-0 pointer-events-none'}
+                    bottom-4 left-4 right-4 h-16 rounded-2xl border border-neon/30
+                    bg-dark-surface/90 backdrop-blur-xl 
+                    flex md:flex-col flex-row items-center justify-between 
+                    md:p-6 p-2 shadow-2xl shadow-neon/10`}>
       
       <audio 
         key={currentStation.id}
@@ -118,7 +123,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ currentStation, isPlaying, on
       />
 
       {/* Top Section (Desktop Only) */}
-      <div className="hidden md:block mb-8">
+      <div className="hidden md:block mb-8 w-full">
          <div className="flex items-center gap-2 mb-2">
             <div className={`w-2 h-2 rounded-full bg-neon ${isPlaying && !isLoading ? 'animate-pulse' : ''}`}></div>
             <span className="text-neon text-xs tracking-widest font-display">LIVE FEED</span>
@@ -127,32 +132,32 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ currentStation, isPlaying, on
       </div>
 
       {/* Main Player Info */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center space-y-6">
+      <div className="flex-1 flex md:flex-col flex-row items-center md:justify-center w-full gap-2 md:gap-6 overflow-hidden">
         
         {/* Album Art / Logo */}
-        <div className="relative group">
-            <div className={`absolute -inset-1 bg-gradient-to-r from-neon to-green-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 ${isPlaying && !isLoading ? 'opacity-75' : ''}`}></div>
-            <div className="relative w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-neon/50 bg-black">
+        <div className="relative group shrink-0">
+            <div className={`hidden md:block absolute -inset-1 bg-gradient-to-r from-neon to-green-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 ${isPlaying && !isLoading ? 'opacity-75' : ''}`}></div>
+            <div className="relative w-12 h-12 md:w-48 md:h-48 rounded-lg md:rounded-full overflow-hidden border border-neon/50 bg-black">
                 <img 
                     src={currentStation.logo} 
                     alt={currentStation.name} 
-                    className={`w-full h-full object-cover transition-all duration-[20s] ${isPlaying && !isLoading ? 'animate-[spin_10s_linear_infinite]' : ''}`} 
+                    className={`w-full h-full object-cover transition-all duration-[20s] ${isPlaying && !isLoading ? 'md:animate-[spin_10s_linear_infinite]' : ''}`} 
                 />
-                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <div className="hidden md:flex absolute inset-0 bg-black/20 items-center justify-center">
                     <div className="w-4 h-4 bg-dark-bg rounded-full border border-neon"></div>
                 </div>
             </div>
         </div>
 
         {/* Text Info */}
-        <div className="space-y-1">
-            <h3 className="text-2xl font-bold text-white truncate max-w-[250px]">{currentStation.name}</h3>
-            <p className="text-neon text-sm uppercase tracking-widest">{currentStation.genre}</p>
-            <p className="text-gray-400 text-xs">{currentStation.location}</p>
+        <div className="flex-1 min-w-0 md:text-center md:space-y-1 ml-2 md:ml-0">
+            <h3 className="text-sm md:text-2xl font-bold text-white truncate">{currentStation.name}</h3>
+            <p className="text-neon text-[10px] md:text-sm uppercase tracking-widest truncate">{currentStation.genre}</p>
+            <p className="hidden md:block text-gray-400 text-xs">{currentStation.location}</p>
         </div>
 
-        {/* Waveform Visualization (CSS Animation) */}
-        <div className="flex items-center justify-center gap-1 h-8 w-full">
+        {/* Waveform Visualization (Desktop Only) */}
+        <div className="hidden md:flex items-center justify-center gap-1 h-8 w-full">
             {[...Array(15)].map((_, i) => (
                 <div key={i} 
                      className={`w-1 bg-neon/80 rounded-full transition-all duration-75 ${isPlaying && !isLoading ? 'animate-pulse' : 'h-1'}`}
@@ -165,35 +170,35 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ currentStation, isPlaying, on
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-6">
-            <button onClick={onPrev} className="text-gray-400 hover:text-white transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        <div className="flex items-center gap-1 md:gap-6 shrink-0">
+            <button onClick={onPrev} className="p-2 text-gray-400 hover:text-white transition-colors">
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
             </button>
             
             <button 
                 onClick={onTogglePlay}
-                className="w-16 h-16 rounded-full bg-neon hover:bg-white text-black flex items-center justify-center shadow-[0_0_20px_rgba(0,255,157,0.4)] transition-all transform hover:scale-105"
+                className="w-10 h-10 md:w-16 md:h-16 rounded-full bg-neon hover:bg-white text-black flex items-center justify-center shadow-[0_0_20px_rgba(0,255,157,0.4)] transition-all transform hover:scale-105"
             >
                 {isLoading ? (
-                    <svg className="animate-spin h-8 w-8 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-5 w-5 md:h-8 md:w-8 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                 ) : isPlaying ? (
-                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    <svg className="w-5 h-5 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 ) : (
-                    <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg className="w-5 h-5 md:w-8 md:h-8 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 )}
             </button>
 
-            <button onClick={onNext} className="text-gray-400 hover:text-white transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            <button onClick={onNext} className="p-2 text-gray-400 hover:text-white transition-colors">
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
             </button>
         </div>
       </div>
 
       {/* Volume (Desktop) */}
-      <div className="hidden md:block mt-8">
+      <div className="hidden md:block mt-8 w-full">
           <div className="flex items-center gap-3 text-xs text-gray-500">
              <button 
                 onClick={() => setIsMuted(!isMuted)}

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import Globe from './components/Globe';
 import AudioPlayer from './components/AudioPlayer';
@@ -7,9 +8,14 @@ import { RADIO_STATIONS, NAV_ITEMS } from './constants';
 import { RadioStation } from './types';
 
 function App() {
+  // Initialize with the first station so Desktop users see the player immediately
   const [currentStation, setCurrentStation] = useState<RadioStation | null>(RADIO_STATIONS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Track if the player should be visible on mobile (triggered by interaction)
+  const [mobilePlayerOpen, setMobilePlayerOpen] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [email, setEmail] = useState('');
 
@@ -20,16 +26,20 @@ function App() {
   const handleStationSelect = (station: RadioStation) => {
     setCurrentStation(station);
     setIsPlaying(true);
+    setMobilePlayerOpen(true); // Show player on mobile when a station is selected
   };
 
   const handleGlobeStationSelect = (station: RadioStation) => {
     handleStationSelect(station);
-    // Update the search query to show relevant results if the user scrolls down,
-    // but do not force-scroll (navigate) them away from the globe.
+    // Update the search query to show relevant results if the user scrolls down
     setSearchQuery(station.name);
   };
 
-  const togglePlay = () => setIsPlaying(!isPlaying);
+  const togglePlay = () => {
+      setIsPlaying(!isPlaying);
+      // Ensure player is visible if they toggle play (e.g. from a card on mobile)
+      if (!isPlaying) setMobilePlayerOpen(true);
+  };
 
   const handleNext = () => {
     if (!currentStation) return;
@@ -382,6 +392,7 @@ function App() {
         onTogglePlay={togglePlay}
         onNext={handleNext}
         onPrev={handlePrev}
+        showOnMobile={mobilePlayerOpen}
       />
 
     </div>
